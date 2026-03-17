@@ -46,6 +46,14 @@ This system achieves centimeter-level positioning accuracy by receiving Real-Tim
 
 **ESP32** by Espressif Systems
 
+#### Partition Scheme (Important)
+
+The `esp32_rtk_wifi` sketch uses both WiFi and BLE, which together exceed the default 1.28MB app partition. Before compiling, set:
+
+`Tools → Partition Scheme → No OTA (Large APP)`
+
+This gives ~2MB for the app. You must set this each time you use a new machine. OTA is not needed for field buoys.
+
 #### Libraries
 
 Install these from the Arduino Library Manager:
