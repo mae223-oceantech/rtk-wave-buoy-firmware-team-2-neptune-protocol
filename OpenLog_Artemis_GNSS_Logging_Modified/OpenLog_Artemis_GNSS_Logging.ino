@@ -587,8 +587,39 @@ void readIMUData() {
   lastIMUReadTime = currentTime;
 }
 
+// Apollo3 snprintf/dtostrf don't support floats. Manual conversion.
+// Writes a float as "-123.45" into buf, returns chars written.
+int floatToStr(char *buf, int bufSize, float val, int decimals) {
+  int pos = 0;
+  if (val < 0.0f) {
+    if (pos < bufSize - 1) buf[pos++] = '-';
+    val = -val;
+  }
+  // Round
+  float rounding = 0.5f;
+  for (int i = 0; i < decimals; i++) rounding /= 10.0f;
+  val += rounding;
+
+  unsigned long intPart = (unsigned long)val;
+  float remainder = val - (float)intPart;
+
+  // Write integer part
+  pos += snprintf(buf + pos, bufSize - pos, "%lu", intPart);
+
+  if (decimals > 0 && pos < bufSize - 1) {
+    buf[pos++] = '.';
+    for (int i = 0; i < decimals && pos < bufSize - 1; i++) {
+      remainder *= 10.0f;
+      int digit = (int)remainder;
+      buf[pos++] = '0' + digit;
+      remainder -= digit;
+    }
+  }
+  buf[pos] = '\0';
+  return pos;
+}
+
 // Uses a static char buffer instead of String to avoid heap fragmentation.
-// Fixes: sign loss for values between -1 and 0, gyro truncation, trailing comma.
 int createIMUDataString(char *buf, int bufSize) {
   int pos = 0;
 
@@ -598,22 +629,25 @@ int createIMUDataString(char *buf, int bufSize) {
   pos += snprintf(buf + pos, bufSize - pos, "%s,IMU", timeString);
 
   if (settings.sensor_IMU.enableAccel) {
-    pos += snprintf(buf + pos, bufSize - pos, ",%.2f,%.2f,%.2f",
-                    myICM.accX(), myICM.accY(), myICM.accZ());
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.accX(), 2);
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.accY(), 2);
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.accZ(), 2);
   }
 
   if (settings.sensor_IMU.enableGyro) {
-    pos += snprintf(buf + pos, bufSize - pos, ",%.2f,%.2f,%.2f",
-                    myICM.gyrX(), myICM.gyrY(), myICM.gyrZ());
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.gyrX(), 2);
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.gyrY(), 2);
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.gyrZ(), 2);
   }
 
   if (settings.sensor_IMU.enableMag) {
-    pos += snprintf(buf + pos, bufSize - pos, ",%.2f,%.2f,%.2f",
-                    myICM.magX(), myICM.magY(), myICM.magZ());
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.magX(), 2);
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.magY(), 2);
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.magZ(), 2);
   }
 
   if (settings.sensor_IMU.enableTemp) {
-    pos += snprintf(buf + pos, bufSize - pos, ",%.1f", myICM.temp());
+    buf[pos++] = ','; pos += floatToStr(buf + pos, bufSize - pos, myICM.temp(), 1);
   }
 
   pos += snprintf(buf + pos, bufSize - pos, "\r\n");

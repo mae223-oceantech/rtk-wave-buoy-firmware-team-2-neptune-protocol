@@ -57,7 +57,7 @@ void storeData(void)
       gnssDataFile.sync();
       updateDataFileAccess(&gnssDataFile); //Update the file access time stamp
 
-      // Sync IMU file on the same 1-second interval (not on every write)
+      // Sync IMU file on the same 1-second interval
       if (imuDataFile && settings.sensor_IMU.log && online.imu)
       {
         imuDataFile.sync();
@@ -66,7 +66,21 @@ void storeData(void)
       lastDataLogSyncTime = millis();
     }
   }
+
   readIMUData();
+
+  // Sync IMU file independently when GNSS is not available
+  if (!qwiicOnline.uBlox || !qwiicAvailable.uBlox)
+  {
+    if (imuDataFile && settings.sensor_IMU.log && online.imu)
+    {
+      if ((settings.frequentFileAccessTimestamps) && (millis() > (lastDataLogSyncTime + 1000)))
+      {
+        imuDataFile.sync();
+        lastDataLogSyncTime = millis();
+      }
+    }
+  }
 }
 
 void storeFinalData(void)
