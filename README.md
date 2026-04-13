@@ -85,19 +85,19 @@ esp32/                                   # ESP32 sketches
     esp32_rtk.ino
     esp32_botletic.ino
 
-accelerometer/                           # IMU documentation and datasheets
-    IMU_STUDENT_GUIDE.md                 # Student guide for IMU data logging
+accelerometer/                           # ICM-20948 and AK09916 datasheets
     ICM-20948-Datasheet-v1.3.pdf
     AK09916-Magnetometer-Datasheet.pdf
-    ACCELEROMETER_PERFORMANCE_GUIDE.md
 
 ubx_parsers/                             # UBX binary to CSV conversion
     v3_ubx_parser.py
     v2_ubx_parser.py
 
-documents/                               # Setup and reference guides
+tutorials/                               # Student guides and reference docs
+    IMU_STUDENT_GUIDE.md                 # IMU data logging guide (Arduino IDE + CLI)
     SERIAL_MONITOR_SETUP.md              # TeraTerm (Windows) and CoolTerm (macOS)
     GETTING_UPDATES.md                   # How to pull instructor updates
+    ACCELEROMETER_PERFORMANCE_GUIDE.md
     VSCODE_ARDUINO_SETUP.md
     LOGGING_ANALYSIS.md
 ```
