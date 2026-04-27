@@ -342,17 +342,22 @@ void beginClient() {
       Serial.print(F(" / ")); Serial.print(SERVER_BUFFER_SIZE); Serial.println(F(" bytes"));
       ntripClient.write(serverRequest, strlen(serverRequest));
 
+      
       // Wait for HTTP response
       unsigned long timeout = millis();
+      bool casterTimedOut = false;
       while (ntripClient.available() == 0) {
         if (millis() - timeout > 5000) {
-          Serial.println(F("Caster timed out"));
+          Serial.println(F("Caster timed out — retrying in 1 s"));
           ntripClient.stop();
-          ntripRunning = false;
-          digitalWrite(LED_PIN, LOW);
-          return;
+          casterTimedOut = true;
+          break;
         }
         delay(10);
+      }
+      if (casterTimedOut) {
+        delay(1000);
+        continue;  // back to top of while(ntripRunning) — try again
       }
 
       // Parse HTTP response — look for 200 OK
@@ -372,10 +377,18 @@ void beginClient() {
       Serial.print(F("Caster response: ")); Serial.println(response);
 
       if (!connectionSuccess) {
-        Serial.println(F("NTRIP connection failed"));
-        ntripRunning = false;
-        digitalWrite(LED_PIN, LOW);
-        return;
+        // 401 means credentials are wrong — don't retry forever, exit so you notice
+        if (strstr(response, "401") > (char *)0) {
+          Serial.println(F("401 Unauthorized — exiting (check secrets.h)"));
+          ntripRunning = false;
+          digitalWrite(LED_PIN, LOW);
+          return;
+        }
+        // Anything else is probably transient (caster hiccup, weird response) — retry
+        Serial.println(F("NTRIP connection failed — retrying in 2 s"));
+        ntripClient.stop();
+        delay(2000);
+        continue;
       }
 
       lastReceivedRTCM_ms = millis();
