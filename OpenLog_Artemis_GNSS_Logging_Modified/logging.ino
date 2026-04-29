@@ -30,13 +30,20 @@ char* findNextAvailableLog(int &newFileNumber, const char *fileLeader)
       sprintf(newFileNumberStr, "%d", newFileNumber);
     sprintf(newFileName, "%s%s.ubx", fileLeader, newFileNumberStr); //Splice the new file number into this file name. Max no. is 99999.
 
-//    if (settings.printMinorDebugMessages == true)
-//    {
-//      Serial.print(F("findNextAvailableLog: trying "));
-//      Serial.println(newFileName);
-//    }
+    if (settings.printMinorDebugMessages == true)
+    {
+      Serial.print(F("findNextAvailableLog: trying "));
+      Serial.println(newFileName);
+    }
 
     if (sd.exists(newFileName) == false) break; //File name not found so we will use it.
+
+    //File exists — check if it is empty. If so, reuse it (matches IMU log behaviour).
+    SdFile existingFile;
+    existingFile.open(newFileName, O_READ);
+    bool isEmpty = (existingFile.fileSize() == 0);
+    existingFile.close();
+    if (isEmpty) break;
 
     newFileNumber++; //Try the next number
   }

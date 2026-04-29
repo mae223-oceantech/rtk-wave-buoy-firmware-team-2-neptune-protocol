@@ -54,17 +54,11 @@ const char mountPoint[]     = "POLARIS";
 | `password` | Your WiFi password. |
 | `casterHost` | Leave exactly as shown — this is the Polaris NTRIP caster address. |
 | `casterPort` | Leave as `2101` — this is the standard NTRIP port. |
-| `casterUser` | The email address on your Point One Navigation account. |
-| `casterUserPW` | Your Polaris **API key** (not your account login password — see below). |
+| `casterUser` | The class Polaris username — see the Canvas assignment for this value. |
+| `casterUserPW` | The class Polaris password — see the Canvas assignment for this value. |
 | `mountPoint` | Leave as `POLARIS`. |
 
-### How to get a Polaris API key
-
-1. Log in at [app.pointonenav.com](https://app.pointonenav.com)
-2. Go to **Devices** or **API Keys** → **Create new key**
-3. Copy the generated key string and paste it as the value of `casterUserPW`
-
-> `casterUserPW` is the API key, **not** the password you use to log in to the website. These are different strings.
+> The `casterUser` and `casterUserPW` values were distributed as a Canvas assignment. Do not share them outside the class.
 
 ---
 
